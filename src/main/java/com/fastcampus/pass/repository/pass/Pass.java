@@ -3,9 +3,9 @@ package com.fastcampus.pass.repository.pass;
 import com.fastcampus.pass.repository.BaseEntity;
 import com.fastcampus.pass.repository.packaze.Packaze;
 import com.fastcampus.pass.repository.user.User;
-import jakarta.persistence.*;
 import lombok.*;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity

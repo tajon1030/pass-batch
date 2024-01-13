@@ -3,16 +3,11 @@ package com.fastcampus.pass.job.pass;
 
 import com.fastcampus.pass.repository.pass.Pass;
 import com.fastcampus.pass.repository.pass.PassStatus;
-import jakarta.persistence.EntityManagerFactory;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.database.JpaCursorItemReader;
 import org.springframework.batch.item.database.JpaItemWriter;
@@ -20,50 +15,59 @@ import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilde
 import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.persistence.EntityManagerFactory;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-@Configuration
-@RequiredArgsConstructor
-@Slf4j
-public class ExpirePassesJobConfig {
 
-    private final int CHUNK_SIZE = 5;
+@Configuration
+public class ExpirePassesJobConfig {
+    private final int CHUNK_SIZE = 1;
+
+    // @EnableBatchProcessing로 인해 Bean으로 제공된 JobBuilderFactory, StepBuilderFactory
+    private final JobBuilderFactory jobBuilderFactory;
+    private final StepBuilderFactory stepBuilderFactory;
     private final EntityManagerFactory entityManagerFactory;
 
+    public ExpirePassesJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
+        this.jobBuilderFactory = jobBuilderFactory;
+        this.stepBuilderFactory = stepBuilderFactory;
+        this.entityManagerFactory = entityManagerFactory;
+    }
+
     @Bean
-    public Job expirePassesJob(PlatformTransactionManager transactionManager, JobRepository jobRepository) {
-        return new JobBuilder("expirePassesJob", jobRepository)
-                .start(expirePassesStep(transactionManager, jobRepository))
+    public Job expirePassesJob() {
+        return this.jobBuilderFactory.get("expirePassesJob")
+                .start(expirePassesStep())
                 .build();
     }
 
     @Bean
-    public Step expirePassesStep(PlatformTransactionManager transactionManager, JobRepository jobRepository) {
-        return new StepBuilder("expirePassesStep", jobRepository)
-                .<Pass, Pass>chunk(CHUNK_SIZE, transactionManager)
+    public Step expirePassesStep() {
+        return this.stepBuilderFactory.get("expirePassesStep")
+                .<Pass, Pass>chunk(CHUNK_SIZE)
                 .reader(expirePassesItemReader())
                 .processor(expirePassesItemProcessor())
                 .writer(expirePassesItemWriter())
                 .build();
+
     }
 
-
+    /**
+     * JpaCursorItemReader: JpaPagingItemReader만 지원하다가 Spring 4.3에서 추가되었습니다.
+     * 페이징 기법보다 보다 높은 성능으로, 데이터 변경에 무관한 무결성 조회가 가능합니다.
+     */
     @Bean
-    @StepScope //Bean의 생성 시점이 스프링 애플리케이션이 실행되는 시점이 아닌 @JobScope, @StepScope가 명시된 메서드가 실행될 때까지 지연시키는 것을 의미
+    @StepScope
     public JpaCursorItemReader<Pass> expirePassesItemReader() {
-        // 데이터를 읽어올때 status가 progress인것들만 읽어와서 처리하면 expired로 변경이 되는데
-        // 페이징의 경우 누락이 될수있으므로 커서기반으로 구현
         return new JpaCursorItemReaderBuilder<Pass>()
                 .name("expirePassesItemReader")
                 .entityManagerFactory(entityManagerFactory)
+                // 상태(status)가 진행중이며, 종료일시(endedAt)이 현재 시점보다 과거일 경우 만료 대상이 됩니다.
                 .queryString("select p from Pass p where p.status = :status and p.endedAt <= :endedAt")
                 .parameterValues(Map.of("status", PassStatus.PROGRESSED, "endedAt", LocalDateTime.now()))
                 .build();
-
     }
 
     @Bean
@@ -74,6 +78,9 @@ public class ExpirePassesJobConfig {
         };
     }
 
+    /**
+     * JpaItemWriter: JPA의 영속성 관리를 위해 EntityManager를 필수로 설정해줘야 합니다.
+     */
     @Bean
     public JpaItemWriter<Pass> expirePassesItemWriter() {
         return new JpaItemWriterBuilder<Pass>()

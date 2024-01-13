@@ -6,6 +6,7 @@ import com.fastcampus.pass.repository.pass.Pass;
 import com.fastcampus.pass.repository.pass.PassRepository;
 import com.fastcampus.pass.repository.pass.PassStatus;
 import com.fastcampus.pass.repository.user.User;
+import com.fastcampus.pass.repository.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.ExitStatus;
@@ -21,6 +22,7 @@ import org.springframework.test.context.ContextConfiguration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,6 +40,9 @@ class ExpirePassesJobConfigTest {
     @Autowired
     private PassRepository passRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
 
     private void addPassEntities(int size) {
         final LocalDateTime now = LocalDateTime.now();
@@ -48,9 +53,7 @@ class ExpirePassesJobConfigTest {
 
         List<Pass> passEntities = new ArrayList<>();
         for (int i = 0; i < size; ++i) {
-            final User user = User.builder()
-                    .userId("A" + 1000000 + i)
-                    .build();
+            User user = userRepository.findByUserId("A" + (1000000 + i)).get();
             Pass pass = Pass.builder()
                     .packaze(packaze)
                     .status(PassStatus.PROGRESSED)
@@ -68,7 +71,7 @@ class ExpirePassesJobConfigTest {
     @Test
     public void test_expirePassesStep() throws Exception {
         // given
-        addPassEntities(10);
+        addPassEntities(3);
 
         // when
         JobExecution jobExecution = jobLauncherTestUtils.launchJob();

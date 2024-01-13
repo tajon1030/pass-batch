@@ -4,16 +4,7 @@ spring:
     username: pass_local_user
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
-    batch:
-      hikari:
-        jdbc-url: jdbc:mysql://127.0.0.1:3307/pass_local?allowPublicKeyRetrieval=true&characterEncoding=UTF-8
-        username: pass_local_user
-        password: 1234
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        pool-name: 'read-and-write-pool'
   batch:
-    job:
-      name: passJob
     jdbc:
       # Batch에 사용되는 SQL 초기화 스크립트를 실행합니다.
       # jobRepository 6개 테이블을 외부db와 연결하는경우 설정을 통해 자동으로 생성가능

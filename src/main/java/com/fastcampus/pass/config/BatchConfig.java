@@ -1,6 +1,9 @@
 package com.fastcampus.pass.config;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.batch.core.configuration.JobRegistry;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
@@ -24,43 +27,27 @@ import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
 
+
+/*
+ * @EnableBatchProcessing
+ * Spring Batch 기능을 활성화하고 배치 작업을 설정하기 위한 기본 구성을 제공합니다.
+ * JobRepository, JobLauncher, JobRegistry, PlatformTransactionManager, JobBuilderFactory, StepBuilderFactory 빈으로 제공됩니다.
+ * https://docs.spring.io/spring-batch/docs/current/api/org/springframework/batch/core/configuration/annotation/EnableBatchProcessing.html
+ */
+
+@EnableBatchProcessing
 @Configuration
-@EnableConfigurationProperties(BatchProperties.class)
 public class BatchConfig {
 
-    // batchDatasource 사용을 위한 수동 빈 등록
+    /**
+     * JobRegistry는 context에서 Job을 추적할 때 유용합니다.
+     * JobRegistryBeanPostProcessor는 Application Context가 올라가면서 bean 등록 시, 자동으로 JobRegistry에 Job을 등록 시켜줍니다.
+     */
     @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "spring.batch.job", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public JobLauncherApplicationRunner jobLauncherApplicationRunner(JobLauncher jobLauncher, JobExplorer jobExplorer,
-                                                                     JobRepository jobRepository, BatchProperties properties) {
-        JobLauncherApplicationRunner runner = new JobLauncherApplicationRunner(jobLauncher, jobExplorer, jobRepository);
-        String jobNames = properties.getJob().getName();
-        if (StringUtils.hasText(jobNames)) {
-            runner.setJobName(jobNames);
-        }
-        return runner;
-    }
+    public JobRegistryBeanPostProcessor jobRegistryBeanPostProcessor(JobRegistry jobRegistry) {
+        JobRegistryBeanPostProcessor jobRegistryBeanPostProcessor = new JobRegistryBeanPostProcessor();
+        jobRegistryBeanPostProcessor.setJobRegistry(jobRegistry);
+        return jobRegistryBeanPostProcessor;
 
-    // batchDatasource 사용을 위한 수동 빈 등록
-    @Bean
-    @ConditionalOnMissingBean(BatchDataSourceScriptDatabaseInitializer.class)
-    BatchDataSourceScriptDatabaseInitializer batchDataSourceInitializer(DataSource dataSource,
-                                                                        @BatchDataSource ObjectProvider<DataSource> batchDataSource, BatchProperties properties) {
-        return new BatchDataSourceScriptDatabaseInitializer(batchDataSource.getIfAvailable(() -> dataSource),
-                properties.getJdbc());
-    }
-
-    @BatchDataSource
-    @ConfigurationProperties(prefix = "spring.datasource.batch.hikari")
-    @Bean("batchDataSource")
-    public DataSource batchDataSource() {
-        return DataSourceBuilder.create().type(HikariDataSource.class).build();
-    }
-
-    @Bean
-    public PlatformTransactionManager batchTransactionManager(
-            @Qualifier("batchDataSource") DataSource batchDataSource) {
-        return new DataSourceTransactionManager(batchDataSource);
     }
 }
