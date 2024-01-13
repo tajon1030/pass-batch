@@ -5,12 +5,9 @@ services:
 
   mysql: # 서비스이름으로 편의대로 지을 수 있음
     container_name: mysql_local
-    image: mysql:8.0.30
-    volumes:
-      - ./db/conf.d:/etc/mysql/conf.d
-      - ./db/initdb.d:/docker-entrypoint-initdb.d
+    build: .
     ports:
-      - "3307:3306"
+      - "3307:3306" # 내 로컬상 이미 3306포트는 할당되어있어서 3307으로 변경하였음
     environment:
       - MYSQL_DATABASE=pass_local
       - MYSQL_USER=pass_local_user
