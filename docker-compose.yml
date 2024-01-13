@@ -1,0 +1,19 @@
+# Use root/example as user/password credentials
+version: '3.8' # 도커컴포즈 최신버전
+
+services:
+
+  mysql: # 서비스이름으로 편의대로 지을 수 있음
+    container_name: mysql_local
+    image: mysql:8.0.30
+    volumes:
+      - ./db/conf.d:/etc/mysql/conf.d
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_DATABASE=pass_local
+      - MYSQL_USER=pass_local_user
+      - MYSQL_PASSWORD=1234
+      - MYSQL_ROOT_PASSWORD=1234
+      - TZ=Asia/Seoul
