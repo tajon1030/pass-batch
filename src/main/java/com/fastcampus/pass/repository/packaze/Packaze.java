@@ -2,15 +2,16 @@ package com.fastcampus.pass.repository.packaze;
 
 import com.fastcampus.pass.repository.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
 @ToString
 @Table(name = "package")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.NONE)
 public class Packaze extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

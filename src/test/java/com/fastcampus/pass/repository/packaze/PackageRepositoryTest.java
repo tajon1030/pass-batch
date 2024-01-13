@@ -24,9 +24,10 @@ class PackageRepositoryTest {
     @Test
     public void test_save() {
         // given
-        Packaze packaze = new Packaze();
-        packaze.setPackageName("바디챌린지 12주");
-        packaze.setPeriod(30);
+        Packaze packaze = Packaze.builder()
+                .packageName("바디챌린지 12주")
+                .period(30)
+                .build();
 
         // when
         packageRepository.save(packaze);
@@ -40,14 +41,16 @@ class PackageRepositoryTest {
         // given
         LocalDateTime localDateTime = LocalDateTime.now().minusMinutes(1);
 
-        Packaze packaze0 = new Packaze();
-        packaze0.setPackageName("학생전용 3개월");
-        packaze0.setPeriod(90);
+        Packaze packaze0 = Packaze.builder()
+                .packageName("학생전용 3개월")
+                .period(90)
+                .build();
         packageRepository.save(packaze0);
 
-        Packaze packaze1 = new Packaze();
-        packaze1.setPackageName("학생전용 6개월");
-        packaze1.setPeriod(180);
+        Packaze packaze1 = Packaze.builder()
+                .packageName("학생전용 6개월")
+                .period(180)
+                .build();
         packageRepository.save(packaze1);
 
         // when
@@ -60,9 +63,10 @@ class PackageRepositoryTest {
 
     @Test
     public void test_updateCountAndPeriod() {
-        Packaze packaze = new Packaze();
-        packaze.setPackageName("바프 이벤트 6개월");
-        packaze.setPeriod(180);
+        Packaze packaze = Packaze.builder()
+                .packageName("바프 이벤트 6개월")
+                .period(180)
+                .build();
         packageRepository.save(packaze);
 
         // when
@@ -78,9 +82,10 @@ class PackageRepositoryTest {
 
     @Test
     public void test_delete(){
-        Packaze packaze = new Packaze();
-        packaze.setPackageName("제거할 이용권");
-        packaze.setCount(1);
+        Packaze packaze = Packaze.builder()
+                .packageName("제거할 이용권")
+                .count(1)
+                .build();
         Packaze savedPackaze = packageRepository.save(packaze);
 
         // when
