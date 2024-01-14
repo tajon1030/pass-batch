@@ -48,4 +48,8 @@ public class Pass extends BaseEntity {
         this.status = PassStatus.EXPIRED;
         this.expiredAt = LocalDateTime.now();
     }
+
+    public void usePass(){
+        this.remainingCount--;
+    }
 }
