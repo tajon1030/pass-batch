@@ -1,3 +1,6 @@
+server:
+  port: 8081
+
 spring:
   datasource:
     url: jdbc:mysql://127.0.0.1:3307/pass_local?zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
@@ -5,6 +8,8 @@ spring:
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
   batch:
+    job:
+      enabled: false # 기본값 true는 SpringBoot 실행 시 등록되어 있는 Job들이 실행됩니다.
     jdbc:
       # Batch에 사용되는 SQL 초기화 스크립트를 실행합니다.
       # jobRepository 6개 테이블을 외부db와 연결하는경우 설정을 통해 자동으로 생성가능
