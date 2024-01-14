@@ -23,9 +23,13 @@ public class Pass extends BaseEntity {
     @JoinColumn(name = "packageSeq")
     private Packaze packaze;
 
+    private Integer packageSeq;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
     private User user;
+
+    private String userId;
 
     @Column(nullable = false, columnDefinition = "VARCHAR(10)")
     @Enumerated(EnumType.STRING)
