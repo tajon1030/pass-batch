@@ -21,7 +21,7 @@ public class BulkPass extends BaseEntity {
     private Integer bulkPassSeq;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "packageSeq")
+    @JoinColumn(name = "packageSeq", insertable = false, updatable = false)
     private Packaze packaze;
 
     private Integer packageSeq;

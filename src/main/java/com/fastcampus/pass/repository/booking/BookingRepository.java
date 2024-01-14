@@ -10,7 +10,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     @Transactional
     @Modifying
     @Query(value = """
-            UPDATE BookingEntity b
+            UPDATE Booking b
                 SET b.usedPass = :usedPass
                 , b.modifiedAt = CURRENT_TIMESTAMP
             WHERE b.passSeq = :passSeq

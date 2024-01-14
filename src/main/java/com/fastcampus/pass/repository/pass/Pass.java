@@ -20,13 +20,13 @@ public class Pass extends BaseEntity {
     private Integer passSeq;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "packageSeq")
+    @JoinColumn(name = "packageSeq", insertable = false, updatable = false)
     private Packaze packaze;
 
     private Integer packageSeq;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "userId", insertable = false, updatable = false)
     private User user;
 
     private String userId;
@@ -49,7 +49,7 @@ public class Pass extends BaseEntity {
         this.expiredAt = LocalDateTime.now();
     }
 
-    public void usePass(){
+    public void usePass() {
         this.remainingCount--;
     }
 }

@@ -11,7 +11,7 @@ public interface StatisticsRepository extends JpaRepository<Statistics, Integer>
 
     @Query(value = """
             SELECT new com.fastcampus.pass.repository.statistics.AggregatedStatistics(s.statisticsAt, SUM(s.allCount), SUM(s.attendedCount), SUM(s.cancelledCount))
-            FROM StatisticsEntity s 
+            FROM Statistics s 
             WHERE s.statisticsAt BETWEEN :from AND :to 
             GROUP BY s.statisticsAt
             """)
